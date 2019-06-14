@@ -19,25 +19,25 @@ namespace ZookeeperDemo
             CONNECTION_TIMEOUT = timeout;
         }
 
-        public async Task<ZooKeeper> CreateClient(string hostPort, string chroot = null)
+        public Task<ZooKeeper> CreateClient(string hostPort, string chroot = null)
         {
             var watcher = new ConnectedWatcher();
 
             var zk = new ZooKeeper(hostPort + chroot, CONNECTION_TIMEOUT, watcher);
 
-            var tcs = new TaskCompletionSource<int>();
+            //var tcs = new TaskCompletionSource<int>();
 
-            watcher.SyncConnectedEvent += () =>
-            {
-                tcs.SetResult(1);
-            };
+            //watcher.SyncConnectedEvent += () =>
+            //{
+            //    tcs.SetResult(1);
+            //};
 
-            if (tcs.Task != await Task.WhenAny(tcs.Task, Task.Delay(CONNECTION_TIMEOUT)))
-            {
-                throw new Exception("Unable to connect to zookeeper server");
-            }
+            //if (tcs.Task != await Task.WhenAny(tcs.Task, Task.Delay(CONNECTION_TIMEOUT)))
+            //{
+            //    throw new Exception("Unable to connect to zookeeper server");
+            //}
 
-            return zk;
+            return Task.FromResult(zk);
         }
 
         private class ConnectedWatcher : Watcher
