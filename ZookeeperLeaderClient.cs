@@ -21,7 +21,7 @@ namespace ZookeeperDemo
 
         private readonly byte[] DEFAULT_DATA = { 0x12, 0x34 };
 
-        private const string ROOT = "/fairprice_leader";
+        private const string ROOT = "/fairprice/leader";
 
         private string _znode;
 
@@ -100,10 +100,17 @@ namespace ZookeeperDemo
 
         public async Task EnsureExists(string path)
         {
-            Stat stat = await _zk.existsAsync(path, false);
-            if (stat == null)
+            var ps = path.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+
+            for (int i = 0; i < ps.Length; i++)
             {
-                await _zk.createAsync(path, DEFAULT_DATA, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+                var p = $"/{string.Join("/", new ArraySegment<string>(ps, 0, i + 1))}";
+
+                Stat stat = await _zk.existsAsync(p, false);
+                if (stat == null)
+                {
+                    await _zk.createAsync(p, DEFAULT_DATA, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+                }
             }
         }
 
@@ -141,6 +148,11 @@ namespace ZookeeperDemo
 
                 if (ElectedLeaderEvent != null) await ElectedLeaderEvent();
             }
+        }
+
+        public Task Close()
+        {
+            return _zk.closeAsync();
         }
 
         public class LeaderWatcher : Watcher

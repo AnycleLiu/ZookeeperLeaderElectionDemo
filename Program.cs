@@ -30,6 +30,8 @@ namespace ZookeeperDemo
 
             Console.WriteLine("press any key to exists.");
             Console.Read();
+
+            await leaderClient.Close();
         }
 
     }
